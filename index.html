@@ -2,137 +2,97 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Service Pro v59.5 Stable</title>
-  <meta name="theme-color" content="#2e7d32">
-  <link rel="manifest" href="manifest.json">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Pro v59 Stable</title>
+<link rel="manifest" href="manifest.json">
+  
   <style>
     :root { --primary: #2e7d32; --bg: #f0f2f5; }
-    html, body { height: 100%; }
-    @supports (height: 100dvh) { body { height: 100dvh; } }
-    body { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    header { background: var(--primary); color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; height: 50px; flex-shrink: 0; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; height: 50px; flex-shrink: 0; }
     main { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; }
     #left-panel { min-width: 400px; overflow-y: auto; padding: 20px; box-sizing: border-box; flex: 1; }
     #resizer { width: 6px; cursor: col-resize; background: #ccc; transition: 0.2s; z-index: 5; flex-shrink: 0; }
     #resizer:hover { background: var(--primary); }
-    #right-panel { min-width: 350px; overflow-y: auto; padding: 20px; box-sizing: border-box; background: #fff; border-left: 1px solid #ccc; width: 520px; flex-shrink: 0; }
-
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    #right-panel { min-width: 350px; overflow-y: auto; padding: 20px; box-sizing: border-box; background: #fff; border-left: 1px solid #ccc; width: 500px; flex-shrink: 0; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     th { background: #e8f5e9; color: var(--primary); padding: 12px; font-size: 11px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 2px solid #c8e6c9; text-align: left; }
     td { border-bottom: 1px solid #eee; padding: 8px; font-size: 13px; vertical-align: middle; }
     .sched-text { font-size: 11px; color: #444; white-space: nowrap; }
     input, select, textarea { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 6px; box-sizing: border-box; font-size: 12px; }
     textarea { height: 32px; resize: none; border: none; background: transparent; width: 100%; }
-
     .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-    .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; color: #fff; transition: .2s; }
+    .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
-
     .color-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 10px 0; }
     .color-dot { height: 22px; border-radius: 4px; cursor: pointer; border: 2px solid transparent; }
     .color-dot.active { border-color: #000; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
-
     .mini-grid { display: grid; grid-template-columns: 30px repeat(7, 1fr); gap: 2px; font-size: 10px; text-align: center; }
-    .week-cell { background: #f1f8e9; color: var(--primary); font-weight: bold; border-radius: 3px; display: flex; align-items: center; justify-content: center; transition: .15s; user-select: none; }
+    .week-cell { background: #f1f8e9; color: var(--primary); font-weight: bold; border-radius: 3px; display: flex; align-items: center; justify-content: center; transition: 0.15s; user-select: none; }
+    /* FIX: подсветка номера недели при наведении */
     .week-cell:hover { background: #c8e6c9; cursor: pointer; }
-    .day-cell { background: #f9f9f9; padding: 4px 0; border-radius: 3px; border: 1px solid transparent; transition: .2s; }
-
+    .day-cell { background: #f9f9f9; padding: 4px 0; border-radius: 3px; border: 1px solid transparent; transition: 0.2s; }
     .m-item { padding: 10px; border-radius: 6px; background: #f8f9fa; margin-bottom: 6px; border-left: 5px solid; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
     .actions span { cursor: pointer; margin-left: 10px; }
 
+    /* FIX: контейнер строки недели без ломания сетки */
     .week-row { display: contents; }
-    .week-row:hover .week-cell, .week-row:hover .day-cell { outline: 1px dashed #a5d6a7; background: #e8f5e9; }
+    /* FIX: подсветка всей строки недели при наведении */
+    .week-row:hover .week-cell,
+    .week-row:hover .day-cell {
+      outline: 1px dashed #a5d6a7;
+      background: #e8f5e9;
+    }
 
-    @keyframes wkflash { 0%{ box-shadow:0 0 0 0 rgba(46,125,50,.0);} 30%{ box-shadow:0 0 0 6px rgba(46,125,50,.25);} 100%{ box-shadow:0 0 0 0 rgba(46,125,50,.0);} }
-    .flash .week-cell, .flash .day-cell { animation: wkflash .75s ease-out 0s 1; }
+    /* FIX: вспышка при переходе к неделе в календаре */
+    @keyframes wkflash {
+      0%   { box-shadow: 0 0 0 0 rgba(46,125,50,.0); }
+      30%  { box-shadow: 0 0 0 6px rgba(46,125,50,.25); }
+      100% { box-shadow: 0 0 0 0 rgba(46,125,50,.0); }
+    }
+    .flash .week-cell,
+    .flash .day-cell {
+      animation: wkflash .75s ease-out 0s 1;
+    }
 
-    .linklike { background: transparent; border: none; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; }
+    /* FIX: линкоподобная кнопка номера недели в левой таблице */
+    .linklike {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+    }
     .linklike:hover { text-decoration: underline; }
 
-    @keyframes rowflash { 0% { background: #e8f5e9; } 100% { background: transparent; } }
+    /* FIX: вспышка строки слева */
+    @keyframes rowflash {
+      0% { background: #e8f5e9; }
+      100% { background: transparent; }
+    }
     .row-flash { animation: rowflash .9s ease-out 0s 1; }
 
+    /* FIX: легенда */
     .legend { display:flex; flex-wrap: wrap; gap:8px; margin-top:8px; }
     .legend-item { display:flex; align-items:center; gap:6px; padding:4px 6px; border:1px solid #e0e0e0; border-radius:6px; cursor:pointer; user-select:none; font-size:12px; }
     .legend-swatch { width:14px; height:14px; border-radius:3px; border:1px solid rgba(0,0,0,.15); }
     .legend-item.active { outline: 2px solid var(--primary); }
 
     @media print {
-      body:not(.print-cal) #right-panel, body:not(.print-cal) #resizer, body:not(.print-cal) header { display: none !important; }
-      body:not(.print-cal) #left-panel { width: 100%; padding: 0; }
-    }
-    @media print {
-      body.print-cal #left-panel, body.print-cal #resizer, body.print-cal header { display:none !important; }
-      body.print-cal #right-panel { display:block !important; width:100% !important; border:none; }
-    }
-
-    #pwa-update-banner { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 9999; background: #fff; border: 1px solid #e0e0e0; box-shadow: 0 10px 30px rgba(0,0,0,.15); border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
-    #pwa-update-banner[hidden] { display: none !important; }
-    #pwa-update-banner .pwa-upd-icon { width: 28px; height: 28px; border-radius: 6px; background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    #pwa-update-banner .pwa-upd-text { font-size: 14px; line-height: 1.25; color: #263238; flex: 1; }
-    #pwa-update-banner .pwa-upd-actions { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
-    #pwa-update-banner .btn-upd-apply { background: #2e7d32; color:#fff; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
-    #pwa-update-banner .btn-upd-later { background: transparent; color:#2e7d32; border: 1px solid #c8e6c9; border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
-    #pwa-update-banner .btn-upd-close { background: transparent; border: none; color: #607d8b; cursor: pointer; font-size: 18px; line-height: 1; padding: 4px; margin-left: 4px; }
-    @media (max-width: 480px) {
-      #pwa-update-banner { left: 8px; right: 8px; bottom: 8px; padding: 10px; }
-      #pwa-update-banner .pwa-upd-text { font-size: 13px; }
-    }
-
-    button, .btn, select, input, textarea { min-height: 44px; }
-    .btn { font-size: 14px; }
-
-    #sp_fab {
-      position: fixed; right: 16px; bottom: 16px; z-index: 10000;
-      width: 56px; height: 56px; border-radius: 50%; border: none;
-      background: #2e7d32; color: #fff; font-size: 22px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
-      display: none; align-items: center; justify-content: center; cursor: pointer;
-    }
-    #sp_closePanel {
-      display: none; position: sticky; top: -10px; right: 0; margin-left: auto;
-      background: #2e7d32; color:#fff; border: none; border-radius: 8px;
-      padding: 8px 12px; font-weight: 700; cursor: pointer;
-    }
-    @media (max-width: 540px) {
-      body { overflow: hidden; }
-      header { padding: 8px 12px; height: auto; }
-      header .btn { padding: 8px 10px; }
-      main { flex-direction: column; }
-      #left-panel { padding: 12px; }
-      #resizer { display: none !important; }
-      #right-panel {
-        position: fixed; inset: 0; width: 100% !important; height: 100%;
-        background: #fff; border: none; padding: 16px 14px 24px 14px;
-        transform: translateY(100%); transition: transform .25s ease-out; z-index: 9998;
-        overflow-y: auto;
-      }
-      #right-panel.sp-open { transform: translateY(0%); }
-      #sp_fab { display: inline-flex; }
-      #sp_closePanel { display: inline-block; }
-      table { font-size: 14px; }
-      th { font-size: 12px; }
-      td { font-size: 13px; }
-      .legend-item { font-size: 13px; }
+      #right-panel, #resizer, header { display: none !important; }
+      #left-panel { width: 100%; padding: 0; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div style="font-weight: 700;">SERVICE PRO v59.5</div>
-  <div style="display: flex; gap: 8px; flex-wrap:wrap;">
+  <div style="font-weight: bold;">SERVICE PRO v59</div>
+  <div style="display: flex; gap: 8px;">
     <button class="btn" style="background:#546e7a;" onclick="exportJSON()">📤 Бэкап</button>
     <button class="btn" style="background:#78909c;" onclick="importJSON()">📥 Восстановить</button>
-    <button class="btn" style="background:#00695c;" onclick="exportICS()">📅 Экспорт ICS</button>
-    <label class="btn" style="background:#00796b; display:flex; align-items:center; gap:6px;">
-      <input id="icsFile" type="file" accept=".ics,text/calendar" style="display:none" onchange="importICSFile(this)">
-      <span onclick="document.getElementById('icsFile').click()">📥 Импорт ICS</span>
-    </label>
-    <button class="btn" style="background:#8e24aa;" onclick="printCalendar()">🖨 Печать PDF</button>
-    <button class="btn" style="background:#b71c1c;" onclick="resetPWA()">🧹 Очистить кэш</button>
-    <select id="yearSelect" onchange="renderAll()" style="width: 80px; font-weight:700; border-radius: 4px;">
+    <select id="yearSelect" onchange="renderAll()" style="width: 80px; font-weight:bold; border-radius: 4px;">
       <option value="2025">2025</option>
       <option value="2026" selected>2026</option>
       <option value="2027">2027</option>
@@ -142,13 +102,6 @@
 
 <main>
   <div id="left-panel">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#455a64;">
-        <input type="checkbox" id="autoToday" onchange="toggleAutoToday(this.checked)">
-        Перейти к текущей неделе при старте
-      </label>
-    </div>
-
     <table>
       <thead>
         <tr>
@@ -168,12 +121,9 @@
   <div id="resizer"></div>
 
   <div id="right-panel">
-    <button id="sp_closePanel" type="button" onclick="sp_closePanel()">Закрыть</button>
-
     <div class="card">
       <h4 id="tplTitle" style="margin:0 0 10px 0;">Настройка Собрания</h4>
       <input id="mName" placeholder="Название Собрания/События">
-
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
         <div>
           <small>Будний день:</small>
@@ -186,27 +136,27 @@
           <input type="time" id="mTimeWE" style="margin-top:4px;">
         </div>
       </div>
-
       <div class="color-picker" id="pnlColors"></div>
       <input type="hidden" id="selectedColor" value="#2e7d32">
       <input type="hidden" id="editIdx" value="-1">
-
       <div style="display: flex; gap: 5px; margin-top: 10px;">
         <button id="btnSave" class="btn" style="background:var(--primary); flex: 2;" onclick="addMeeting()">Сохранить</button>
         <button id="btnCancel" class="btn" style="background:#999; flex: 1; display: none;" onclick="cancelEdit()">Отмена</button>
       </div>
-
       <div id="meetingsList" style="margin-top: 15px; max-height: 150px; overflow-y: auto;"></div>
     </div>
 
     <div class="card">
       <h4 style="margin:0 0 10px 0;">Календарь (1-52)</h4>
+
+      <!-- FIX: Панель управления календарём -->
       <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;">
         <select id="filterMeeting" onchange="buildCal()" style="flex:1; min-width:220px;">
           <option value="">— показать все события —</option>
         </select>
         <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#455a64; white-space:nowrap;">
-          <input type="checkbox" id="filterStrict" onchange="buildCal()"> Скрывать прочие
+          <input type="checkbox" id="filterStrict" onchange="buildCal()">
+          Скрывать прочие
         </label>
         <button class="btn" style="background:#607d8b;" onclick="clearFilter()">Сброс</button>
         <button class="btn" style="background:#388e3c;" onclick="goToToday()">Сегодня</button>
@@ -215,20 +165,12 @@
       </div>
 
       <div id="calendarArea"></div>
+
+      <!-- FIX: Легенда цветов -->
       <div id="legendArea" class="legend"></div>
     </div>
   </div>
 </main>
-
-<div id="pwa-update-banner" role="status" aria-live="polite" hidden>
-  <div class="pwa-upd-icon" aria-hidden="true">🔄</div>
-  <div class="pwa-upd-text">Доступно обновление приложения. Обновить сейчас?</div>
-  <div class="pwa-upd-actions">
-    <button class="btn-upd-apply" id="pwaApplyBtn">Обновить</button>
-    <button class="btn-upd-later" id="pwaLaterBtn">Позже</button>
-    <button class="btn-upd-close" id="pwaCloseBtn" title="Скрыть">✕</button>
-  </div>
-</div>
 
 <script>
   let meetings = JSON.parse(localStorage.getItem('svc_m')) || [];
@@ -237,10 +179,16 @@
   const resizer = document.getElementById('resizer');
   const rightPanel = document.getElementById('right-panel');
   let isResizing = false;
+
+  // FIX: текущий фокус недели для навигации по отмеченным
   let currentFocusWeek = 1;
 
   resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.userSelect = 'none'; });
-  document.addEventListener('mousemove', (e) => { if (!isResizing) return; let w = window.innerWidth - e.clientX; if (w > 300 && w < 950) rightPanel.style.width = w + 'px'; });
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    let w = window.innerWidth - e.clientX;
+    if (w > 300 && w < 950) rightPanel.style.width = w + 'px';
+  });
   document.addEventListener('mouseup', () => { isResizing = false; document.body.style.userSelect = 'auto'; });
 
   window.onload = () => {
@@ -249,7 +197,7 @@
       const dot = document.createElement('div');
       dot.className = 'color-dot' + (idx===0?' active':'');
       dot.style.background = c;
-      dot.setAttribute('data-color', c);
+      dot.setAttribute('data-color', c); // FIX: для восстановления активного цвета при редактировании
       dot.onclick = () => {
         document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
         dot.classList.add('active');
@@ -257,31 +205,8 @@
       };
       pnl.appendChild(dot);
     });
-
-    document.getElementById('autoToday').checked = localStorage.getItem('svc_auto_today') !== '0';
-
     renderAll();
-
-    if (localStorage.getItem('svc_auto_today') !== '0') {
-      setTimeout(()=>{ goToToday(); }, 300);
-    }
-
-    handleHashAction();
-    window.addEventListener('hashchange', handleHashAction);
   };
-
-  function toggleAutoToday(v){ localStorage.setItem('svc_auto_today', v ? '1':'0'); }
-
-  function handleHashAction() {
-    const h = location.hash.replace('#', '').toLowerCase();
-    if (h === 'today') goToToday();
-    else if (h === 'next') gotoNextMarked();
-    else if (h === 'prev') gotoPrevMarked();
-    else if (h === 'add') {
-      const inp = document.getElementById('mName');
-      if (inp) { inp.focus(); inp.scrollIntoView({behavior:'smooth', block:'center'}); }
-    }
-  }
 
   function renderAll() {
     const year = document.getElementById('yearSelect').value;
@@ -296,7 +221,7 @@
       const weStr = (m.we || m.tWE) ? `${m.we || ''} ${m.tWE || ''}`.trim() : '';
 
       const tr = document.createElement('tr');
-      tr.id = `row-wk-${i}`;
+      tr.id = `row-wk-${i}`; // FIX: id строки недели для фокуса
       tr.innerHTML = `
         <td style="text-align:center; color:#4caf50;">
           <button class="linklike" title="Перейти к неделе в календаре" onclick="goToWeek(${i})">${i}</button>
@@ -333,7 +258,14 @@
     const name = document.getElementById('mName').value;
     const editIdx = parseInt(document.getElementById('editIdx').value);
     if (!name) return;
-    const obj = { name, color: document.getElementById('selectedColor').value, wd: document.getElementById('mDefWD').value, we: document.getElementById('mDefWE').value, tWD: document.getElementById('mTimeWD').value, tWE: document.getElementById('mTimeWE').value };
+    const obj = { 
+      name, 
+      color: document.getElementById('selectedColor').value,
+      wd: document.getElementById('mDefWD').value,
+      we: document.getElementById('mDefWE').value,
+      tWD: document.getElementById('mTimeWD').value,
+      tWE: document.getElementById('mTimeWE').value
+    };
     if (editIdx > -1) { meetings[editIdx] = obj; } else { meetings.push(obj); }
     localStorage.setItem('svc_m', JSON.stringify(meetings));
     cancelEdit();
@@ -348,7 +280,12 @@
     document.getElementById('mTimeWD').value = m.tWD || "";
     document.getElementById('mTimeWE').value = m.tWE || "";
     document.getElementById('selectedColor').value = m.color;
-    document.querySelectorAll('.color-dot').forEach(d => { d.classList.toggle('active', d.getAttribute('data-color') === m.color); });
+
+    // FIX: подсветить выбранный цвет при редактировании
+    document.querySelectorAll('.color-dot').forEach(d => {
+      d.classList.toggle('active', d.getAttribute('data-color') === m.color);
+    });
+
     document.getElementById('editIdx').value = i;
     document.getElementById('btnSave').innerText = "Обновить";
     document.getElementById('btnCancel').style.display = "inline-block";
@@ -391,9 +328,13 @@
     buildCal();
   }
 
+  // =========================
+  // Помощники для недель
+  // =========================
   function getStartMondayForYear(year) {
+    // Пн той недели, которая СОДЕРЖИТ 1 сентября
     const sep1 = new Date(year, 8, 1);
-    const sep1Dow = sep1.getDay() === 0 ? 7 : sep1.getDay();
+    const sep1Dow = sep1.getDay() === 0 ? 7 : sep1.getDay(); // 1..7
     const deltaToPrevMon = -(sep1Dow - 1);
     const startMonday = new Date(sep1);
     startMonday.setDate(sep1.getDate() + deltaToPrevMon);
@@ -405,15 +346,19 @@
     const startMonday = getStartMondayForYear(academicYear);
     const t = new Date(dt); t.setHours(0,0,0,0);
     const diffWeeks = Math.floor((t.getTime() - startMonday.getTime()) / (7*24*3600*1000));
-    return diffWeeks + 1;
+    return diffWeeks + 1; // может быть вне 1..52
   }
 
   function getAcademicYearForDate(dt) {
     const y = dt.getFullYear();
     const sep1Y = new Date(y, 8, 1);
+    // Если дата до 1 сентября — относится к предыдущему АКАДЕМИЧЕСКОМУ году
     return dt < sep1Y ? (y - 1) : y;
   }
 
+  // =========================
+  // Управление фильтром
+  // =========================
   function clearFilter() {
     const el = document.getElementById('filterMeeting');
     const chk = document.getElementById('filterStrict');
@@ -422,6 +367,9 @@
     buildCal();
   }
 
+  // =========================
+  // Построение календаря
+  // =========================
   function buildCal() {
     const area = document.getElementById('calendarArea');
     const year = parseInt(document.getElementById('yearSelect').value);
@@ -429,46 +377,56 @@
     area.innerHTML = '';
     const months = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7];
     const names = ["Сентябрь", "Октябрь", "Ноябрь", "Декабрь", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август"];
+
     const startMonday = getStartMondayForYear(year);
 
+    // Обновляем выпадающий фильтр (не удаляя DOM)
     const filterEl = document.getElementById('filterMeeting');
     if (filterEl) {
       const cur = filterEl.value || '';
-      filterEl.innerHTML = `<option value="">— показать все события —</option>` + meetings.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+      filterEl.innerHTML = `<option value="">— показать все события —</option>` + 
+        meetings.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
       if (cur && meetings.some(m => m.name === cur)) filterEl.value = cur;
     }
     const filterSelected = filterEl ? filterEl.value : '';
     const filterStrict = !!document.getElementById('filterStrict')?.checked;
 
+    // Рендер календаря
     months.forEach((mIdx, i) => {
       const cY = mIdx >= 8 ? year : year + 1;
       const fD = new Date(cY, mIdx, 1).getDay();
       const dInM = new Date(cY, mIdx + 1, 0).getDate();
-      const off = fD === 0 ? 6 : fD - 1;
+      const off = fD === 0 ? 6 : fD - 1; // смещение до ПН
 
       let h = `<div style="margin-bottom:12px;"><div style="font-weight:bold; color:var(--primary); font-size:12px;">${names[i]} ${cY}</div><div class="mini-grid">`;
       h += `<div style="color:#999">№</div><div>П</div><div>В</div><div>С</div><div>Ч</div><div>П</div><div>С</div><div>В</div>`;
-
+      
       let d = 1;
       for (let r = 0; r < 6; r++) {
         if (d > dInM) break;
 
+        // Понедельник текущей строки сетки
         const monDate = new Date(cY, mIdx, 1 - off + r*7);
         monDate.setHours(0,0,0,0);
+
         const diffWeeks = Math.floor((monDate.getTime() - startMonday.getTime()) / (7*24*3600*1000));
-        const serviceWeekNo = diffWeeks + 1;
+        const serviceWeekNo = diffWeeks + 1; // 1..52
         const weekLabel = (serviceWeekNo >= 1 && serviceWeekNo <= 52) ? serviceWeekNo : '';
 
+        // Тултип с датами недели (Пн—Вс)
         const sunDate = new Date(monDate);
         sunDate.setDate(monDate.getDate() + 6);
         const fmt = (dt) => dt.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'});
         const wTitle = weekLabel ? `Неделя №${weekLabel} (${fmt(monDate)} — ${fmt(sunDate)})` : '';
 
+        // Обёртка строки недели
         const rowIdAttr = weekLabel ? ` id="wk-${weekLabel}"` : '';
         h += `<div class="week-row"${rowIdAttr} data-week="${weekLabel}">`;
 
+        // Ячейка номера недели (кликабельна — фокус на строке слева)
         h += `<div class="week-cell" title="${wTitle}" data-week-click="${weekLabel}">${weekLabel}</div>`;
 
+        // Данные недели
         const rowData = (serviceWeekNo >= 1 && serviceWeekNo <= 52) ? data.find(x => x.id == serviceWeekNo) : null;
         const mInfo = rowData ? meetings.find(m => m.name === rowData.m) : null;
 
@@ -488,7 +446,7 @@
               const inRange = endT ? (curT >= startT && curT <= endT) : (curT === startT);
 
               if (inRange && passFilter) {
-                style = `style="background:${mInfo.color}; color:#fff;"`;
+                style = `style="background:${mInfo.color}; color:white;"`;
               } else if (filterSelected) {
                 style = filterStrict ? `style="visibility:hidden;"` : `style="opacity:0.35;"`;
               }
@@ -500,21 +458,30 @@
           }
         }
 
-        h += `</div>`;
+        h += `</div>`; // </div class="week-row">
       }
       area.innerHTML += h + `</div></div>`;
     });
 
+    // FIX: делегирование клика по номеру недели (фокус строки слева)
     area.onclick = (ev) => {
       const wk = ev.target?.getAttribute?.('data-week-click');
-      if (wk) { focusLeftRow(parseInt(wk,10) || 0); }
+      if (wk) {
+        focusLeftRow(parseInt(wk,10) || 0);
+      }
     };
 
+    // FIX: Легенда
     renderLegend(filterSelected);
   }
 
+  // =========================
+  // Легенда — кликабельные события
+  // =========================
   function renderLegend(activeName) {
-    const lg = document.getElementById('legendArea'); if (!lg) return; lg.innerHTML = '';
+    const lg = document.getElementById('legendArea');
+    if (!lg) return;
+    lg.innerHTML = '';
     meetings.forEach(m => {
       const item = document.createElement('div');
       item.className = 'legend-item' + (m.name === activeName ? ' active' : '');
@@ -522,13 +489,16 @@
       item.innerHTML = `<span class="legend-swatch" style="background:${m.color}"></span><span>${m.name}</span>`;
       item.onclick = () => {
         const sel = document.getElementById('filterMeeting');
-        if (sel) sel.value = (sel.value === m.name ? '' : m.name);
+        if (sel) sel.value = (sel.value === m.name ? '' : m.name); // повторный клик — снять фильтр
         buildCal();
       };
       lg.appendChild(item);
     });
   }
 
+  // =========================
+  // Переход и фокус
+  // =========================
   function goToWeek(weekNo) {
     const el = document.getElementById('wk-' + weekNo);
     currentFocusWeek = weekNo;
@@ -546,7 +516,10 @@
     focusLeftRow(weekNo);
   }
 
-  function highlightWeek(weekRowEl) { weekRowEl.classList.add('flash'); setTimeout(() => weekRowEl.classList.remove('flash'), 900); }
+  function highlightWeek(weekRowEl) {
+    weekRowEl.classList.add('flash');
+    setTimeout(() => weekRowEl.classList.remove('flash'), 900);
+  }
 
   function focusLeftRow(weekNo) {
     currentFocusWeek = weekNo;
@@ -557,13 +530,16 @@
     setTimeout(() => row.classList.remove('row-flash'), 1000);
   }
 
+  // =========================
+  // Сегодня
+  // =========================
   function goToToday() {
     const now = new Date();
     const targetAcadYear = getAcademicYearForDate(now);
     const yearSelect = document.getElementById('yearSelect');
     if (yearSelect && yearSelect.value != String(targetAcadYear)) {
       yearSelect.value = String(targetAcadYear);
-      renderAll();
+      renderAll(); // перестроим под другой учебный год
     }
     const wk = getServiceWeekNoByDate(now, targetAcadYear);
     if (wk >= 1 && wk <= 52) {
@@ -573,6 +549,9 @@
     }
   }
 
+  // =========================
+  // Навигация по отмеченным неделям
+  // =========================
   function collectMarkedWeeks() {
     const year = parseInt(document.getElementById('yearSelect').value);
     const data = JSON.parse(localStorage.getItem('svc_d_' + year)) || [];
@@ -585,7 +564,7 @@
       const has = row.m && row.m.trim().length > 0;
       marked[i] = has && (!filterSelected || row.m === filterSelected);
     }
-    return marked;
+    return marked; // 1-based смысл
   }
 
   function gotoNextMarked() {
@@ -603,112 +582,29 @@
     if (!marked.some(Boolean)) return;
     let i = currentFocusWeek || 1;
     for (let step = 1; step <= 52; step++) {
-      const idx = ((i - 1 - step + 52*10) % 52) + 1;
+      const idx = ((i - 1 - step + 52*10) % 52) + 1; // безопасное модуло
       if (marked[idx]) { goToWeek(idx); return; }
     }
   }
 
-  function printCalendar(){
-    document.body.classList.add('print-cal');
-    setTimeout(()=>{ window.print(); setTimeout(()=>document.body.classList.remove('print-cal'), 500); }, 50);
-  }
-
-  function exportICS(){
-    const year = document.getElementById('yearSelect').value;
-    const rows = JSON.parse(localStorage.getItem('svc_d_'+year)||'[]');
-    let ics = ['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//ServicePro//Calendar//RU'];
-    rows.forEach(r=>{
-      if(!r || !r.s || !r.m) return;
-      const dtStart = r.s.replace(/-/g,'');
-      const dtEnd = (r.e||r.s).replace(/-/g,'');
-      ics.push('BEGIN:VEVENT');
-      ics.push('SUMMARY:'+r.m);
-      ics.push('DTSTART;VALUE=DATE:'+dtStart);
-      ics.push('DTEND;VALUE=DATE:'+dtEnd);
-      if(r.nt) ics.push('DESCRIPTION:'+r.nt.replace(/\n/g,'\\n'));
-      ics.push('END:VEVENT');
-    });
-    ics.push('END:VCALENDAR');
-    const blob = new Blob([ics.join('\n')], {type:'text/calendar'});
-    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='servicepro-'+year+'.ics'; a.click();
-  }
-
-  function importICSFile(input){
-    const f = input.files && input.files[0]; if(!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev)=>{
-      try{ importICSParse(ev.target.result); alert('Импорт завершён'); renderAll(); }
-      catch(e){ alert('Ошибка импорта: '+e); }
-      finally { input.value=''; }
-    };
-    reader.readAsText(f);
-  }
-
-  function importICSParse(text){
-    const lines = text.split(/\r?\n/); let cur=null; const events=[];
-    for(const raw of lines){
-      const line = raw.trim();
-      if(line==='BEGIN:VEVENT'){ cur={}; }
-      else if(line==='END:VEVENT'){ if(cur) events.push(cur); cur=null; }
-      else if(cur){
-        const idx = line.indexOf(':');
-        if (idx === -1) continue;
-        const k = line.slice(0, idx);
-        const v = line.slice(idx+1);
-        const key = k.split(';')[0];
-        if(key==='SUMMARY') cur.summary=v;
-        if(key==='DTSTART' || key==='DTSTART;VALUE=DATE') cur.dtstart=v;
-        if(key==='DTEND'   || key==='DTEND;VALUE=DATE')   cur.dtend=v;
-        if(key==='DESCRIPTION') cur.desc=v?.replace(/\\n/g,'\n');
-      }
-    }
-    const year = parseInt(document.getElementById('yearSelect').value);
-    const data = JSON.parse(localStorage.getItem('svc_d_'+year)||'[]');
-
-    function toDateYYYYMMDD(s){
-      if(!s) return null; const y=+s.slice(0,4), m=+s.slice(4,6)-1, d=+s.slice(6,8);
-      const dt=new Date(y,m,d); dt.setHours(0,0,0,0); return dt;
-    }
-
-    events.forEach(ev=>{
-      const sdt = toDateYYYYMMDD(ev.dtstart); const edt = toDateYYYYMMDD(ev.dtend)||sdt; if(!sdt) return;
-      const acadYear = getAcademicYearForDate(sdt);
-      if(acadYear!==year) return;
-      const wk = getServiceWeekNoByDate(sdt, acadYear);
-      if(wk<1 || wk>52) return;
-
-      const name = ev.summary||'Импортированное событие';
-      if(!meetings.some(m=>m.name===name)){
-        meetings.push({name, color: CLRS[meetings.length%CLRS.length], wd:'', we:'', tWD:'', tWE:''});
-      }
-      let row = data.find(r=>r.id==wk); if(!row){ row={id:wk}; data.push(row); }
-      const pad2=n=>n<10?'0'+n:''+n;
-      row.s = `${sdt.getFullYear()}-${pad2(sdt.getMonth()+1)}-${pad2(sdt.getDate())}`;
-      row.e = `${edt.getFullYear()}-${pad2(edt.getMonth()+1)}-${pad2(edt.getDate())}`;
-      row.m = name;
-      if(ev.desc) row.nt = (row.nt?row.nt+'\n':'')+ev.desc;
-    });
-
-    localStorage.setItem('svc_m', JSON.stringify(meetings));
-    localStorage.setItem('svc_d_'+year, JSON.stringify(data));
-  }
-
+  // =========================
+  // Экспорт / Импорт (с UI настройками)
+  // =========================
   function exportJSON() {
     const ui = {
       year: document.getElementById('yearSelect')?.value || '',
       filter: document.getElementById('filterMeeting')?.value || '',
-      strict: !!document.getElementById('filterStrict')?.checked,
-      autoToday: document.getElementById('autoToday')?.checked
+      strict: !!document.getElementById('filterStrict')?.checked
     };
-    const backup = {
-      m: meetings,
-      d25: localStorage.getItem('svc_d_2025'),
-      d26: localStorage.getItem('svc_d_2026'),
+    const backup = { 
+      m: meetings, 
+      d25: localStorage.getItem('svc_d_2025'), 
+      d26: localStorage.getItem('svc_d_2026'), 
       d27: localStorage.getItem('svc_d_2027'),
-      ui
+      ui // FIX: настройки интерфейса
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_v59.5.json`; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_v59.json`; a.click();
   }
 
   function importJSON() {
@@ -721,16 +617,15 @@
         if (c.d25) localStorage.setItem('svc_d_2025', c.d25);
         if (c.d26) localStorage.setItem('svc_d_2026', c.d26);
         if (c.d27) localStorage.setItem('svc_d_2027', c.d27);
+
         if (c.ui) {
           const yEl = document.getElementById('yearSelect');
           if (yEl && c.ui.year) yEl.value = c.ui.year;
           setTimeout(() => {
             const fEl = document.getElementById('filterMeeting');
             const sEl = document.getElementById('filterStrict');
-            const aEl = document.getElementById('autoToday');
             if (fEl && typeof c.ui.filter === 'string') fEl.value = c.ui.filter;
             if (sEl && typeof c.ui.strict === 'boolean') sEl.checked = !!c.ui.strict;
-            if (aEl && typeof c.ui.autoToday !== 'undefined') aEl.checked = !!c.ui.autoToday;
             renderAll();
           }, 0);
         } else {
@@ -740,79 +635,6 @@
     };
     input.click();
   }
-
-  async function resetPWA(){
-    const ok = confirm('Очистить кэш (Service Worker) и локальные данные (localStorage), затем перезапустить?');
-    if(!ok) return;
-    try{
-      if('serviceWorker' in navigator){
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for(const reg of regs) await reg.unregister();
-      }
-      const keys = await caches.keys();
-      for(const k of keys) await caches.delete(k);
-      localStorage.clear();
-      location.reload();
-    }catch(e){ alert('Ошибка очистки: '+e); }
-  }
-
-  (function initPwaUpdater(){
-    if (!('serviceWorker' in navigator)) return;
-    const BANNER_ID = 'pwa-update-banner';
-    const $banner = document.getElementById(BANNER_ID);
-    const $apply  = document.getElementById('pwaApplyBtn');
-    const $later  = document.getElementById('pwaLaterBtn');
-    const $close  = document.getElementById('pwaCloseBtn');
-
-    let newWorkerRef = null;
-    function showBanner(){ if ($banner) $banner.hidden = false; }
-    function hideBanner(){ if ($banner) $banner.hidden = true; }
-    function applyUpdate(){ if (!newWorkerRef) return; try { newWorkerRef.postMessage({ type: 'SKIP_WAITING' }); } catch(e){} }
-
-    navigator.serviceWorker.addEventListener('controllerchange', () => { setTimeout(() => location.reload(), 100); });
-
-    $apply?.addEventListener('click', applyUpdate);
-    $later?.addEventListener('click', hideBanner);
-    $close?.addEventListener('click', hideBanner);
-
-    function trackInstalling(worker){
-      if(!worker) return;
-      newWorkerRef = worker;
-      worker.addEventListener('statechange', () => {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-          showBanner();
-        }
-      });
-    }
-
-    function checkForUpdate(reg){
-      if (reg.waiting) { newWorkerRef = reg.waiting; showBanner(); return; }
-      if (reg.installing) { trackInstalling(reg.installing); return; }
-      reg.addEventListener('updatefound', () => trackInstalling(reg.installing));
-      setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
-    }
-
-    navigator.serviceWorker.register('/Calender-NEW/sw.js', { scope: '/Calender-NEW/' }).then(async (reg) => {
-      try { await reg.navigationPreload?.enable?.(); } catch {}
-      checkForUpdate(reg);
-    }).catch(err => console.error('[PWA] SW registration failed', err));
-  })();
 </script>
-
-<button id="sp_fab" type="button" aria-label="Открыть настройки" onclick="sp_openPanel()">⚙️</button>
-
-<script>
-  function sp_openPanel(){ document.getElementById('right-panel')?.classList.add('sp-open'); }
-  function sp_closePanel(){ document.getElementById('right-panel')?.classList.remove('sp-open'); }
-  (function(){
-    const mq = window.matchMedia('(max-width: 540px)');
-    function apply(){ if (!mq.matches) sp_closePanel(); }
-    mq.addEventListener ? mq.addEventListener('change', apply) : mq.addListener(apply);
-    window.addEventListener('resize', apply);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) sp_closePanel(); });
-    apply();
-  })();
-</script>
-
 </body>
 </html>
