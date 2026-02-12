@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Service Pro v59.5 Stable</title>
-
-  <!-- PWA -->
   <meta name="theme-color" content="#2e7d32">
-  <link rel="manifest" href="/Calender-NEW/manifest.json?v=60.1">
-  
+  <link rel="manifest" href="manifest.json">
+
   <style>
     :root { --primary: #2e7d32; --bg: #f0f2f5; }
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    header { background: var(--primary); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; height: 50px; flex-shrink: 0; }
+    html, body { height: 100%; }
+    @supports (height: 100dvh) { body { height: 100dvh; } }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; margin: 0; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: var(--primary); color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; height: 50px; flex-shrink: 0; }
     main { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; }
     #left-panel { min-width: 400px; overflow-y: auto; padding: 20px; box-sizing: border-box; flex: 1; }
     #resizer { width: 6px; cursor: col-resize; background: #ccc; transition: 0.2s; z-index: 5; flex-shrink: 0; }
     #resizer:hover { background: var(--primary); }
     #right-panel { min-width: 350px; overflow-y: auto; padding: 20px; box-sizing: border-box; background: #fff; border-left: 1px solid #ccc; width: 520px; flex-shrink: 0; }
 
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     th { background: #e8f5e9; color: var(--primary); padding: 12px; font-size: 11px; position: sticky; top: 0; text-transform: uppercase; border-bottom: 2px solid #c8e6c9; text-align: left; }
     td { border-bottom: 1px solid #eee; padding: 8px; font-size: 13px; vertical-align: middle; }
     .sched-text { font-size: 11px; color: #444; white-space: nowrap; }
@@ -28,7 +27,7 @@
     textarea { height: 32px; resize: none; border: none; background: transparent; width: 100%; }
 
     .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-    .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+    .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; color: #fff; transition: .2s; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
 
     .color-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 10px 0; }
@@ -36,48 +35,40 @@
     .color-dot.active { border-color: #000; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
 
     .mini-grid { display: grid; grid-template-columns: 30px repeat(7, 1fr); gap: 2px; font-size: 10px; text-align: center; }
-    .week-cell { background: #f1f8e9; color: var(--primary); font-weight: bold; border-radius: 3px; display: flex; align-items: center; justify-content: center; transition: 0.15s; user-select: none; }
+    .week-cell { background: #f1f8e9; color: var(--primary); font-weight: bold; border-radius: 3px; display: flex; align-items: center; justify-content: center; transition: .15s; user-select: none; }
     .week-cell:hover { background: #c8e6c9; cursor: pointer; }
-    .day-cell { background: #f9f9f9; padding: 4px 0; border-radius: 3px; border: 1px solid transparent; transition: 0.2s; }
+    .day-cell { background: #f9f9f9; padding: 4px 0; border-radius: 3px; border: 1px solid transparent; transition: .2s; }
 
     .m-item { padding: 10px; border-radius: 6px; background: #f8f9fa; margin-bottom: 6px; border-left: 5px solid; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
     .actions span { cursor: pointer; margin-left: 10px; }
 
-    /* Строка недели (без поломки сетки) */
     .week-row { display: contents; }
     .week-row:hover .week-cell, .week-row:hover .day-cell { outline: 1px dashed #a5d6a7; background: #e8f5e9; }
 
-    /* Вспышка при переходе к неделе */
     @keyframes wkflash { 0%{ box-shadow:0 0 0 0 rgba(46,125,50,.0);} 30%{ box-shadow:0 0 0 6px rgba(46,125,50,.25);} 100%{ box-shadow:0 0 0 0 rgba(46,125,50,.0);} }
     .flash .week-cell, .flash .day-cell { animation: wkflash .75s ease-out 0s 1; }
 
-    /* Линкоподобная кнопка номера недели в левой таблице */
     .linklike { background: transparent; border: none; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; }
     .linklike:hover { text-decoration: underline; }
 
-    /* Вспышка строки слева */
     @keyframes rowflash { 0% { background: #e8f5e9; } 100% { background: transparent; } }
     .row-flash { animation: rowflash .9s ease-out 0s 1; }
 
-    /* Легенда */
     .legend { display:flex; flex-wrap: wrap; gap:8px; margin-top:8px; }
     .legend-item { display:flex; align-items:center; gap:6px; padding:4px 6px; border:1px solid #e0e0e0; border-radius:6px; cursor:pointer; user-select:none; font-size:12px; }
     .legend-swatch { width:14px; height:14px; border-radius:3px; border:1px solid rgba(0,0,0,.15); }
     .legend-item.active { outline: 2px solid var(--primary); }
 
-    /* Печать (по умолчанию печатается левая панель) */
     @media print {
       body:not(.print-cal) #right-panel, body:not(.print-cal) #resizer, body:not(.print-cal) header { display: none !important; }
       body:not(.print-cal) #left-panel { width: 100%; padding: 0; }
     }
-    /* Режим печати календаря (для PDF) */
     @media print {
       body.print-cal #left-panel, body.print-cal #resizer, body.print-cal header { display:none !important; }
       body.print-cal #right-panel { display:block !important; width:100% !important; border:none; }
     }
 
-    /* PWA Update Banner */
-    #pwa-update-banner { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 9999; background: #ffffff; border: 1px solid #e0e0e0; box-shadow: 0 10px 30px rgba(0,0,0,.15); border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+    #pwa-update-banner { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 9999; background: #fff; border: 1px solid #e0e0e0; box-shadow: 0 10px 30px rgba(0,0,0,.15); border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
     #pwa-update-banner[hidden] { display: none !important; }
     #pwa-update-banner .pwa-upd-icon { width: 28px; height: 28px; border-radius: 6px; background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
     #pwa-update-banner .pwa-upd-text { font-size: 14px; line-height: 1.25; color: #263238; flex: 1; }
@@ -85,31 +76,63 @@
     #pwa-update-banner .btn-upd-apply { background: #2e7d32; color:#fff; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
     #pwa-update-banner .btn-upd-later { background: transparent; color:#2e7d32; border: 1px solid #c8e6c9; border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
     #pwa-update-banner .btn-upd-close { background: transparent; border: none; color: #607d8b; cursor: pointer; font-size: 18px; line-height: 1; padding: 4px; margin-left: 4px; }
-
     @media (max-width: 480px) {
       #pwa-update-banner { left: 8px; right: 8px; bottom: 8px; padding: 10px; }
       #pwa-update-banner .pwa-upd-text { font-size: 13px; }
+    }
+
+    button, .btn, select, input, textarea { min-height: 44px; }
+    .btn { font-size: 14px; }
+
+    #sp_fab {
+      position: fixed; right: 16px; bottom: 16px; z-index: 10000;
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      background: #2e7d32; color: #fff; font-size: 22px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      display: none; align-items: center; justify-content: center; cursor: pointer;
+    }
+    #sp_closePanel {
+      display: none; position: sticky; top: -10px; right: 0; margin-left: auto;
+      background: #2e7d32; color:#fff; border: none; border-radius: 8px;
+      padding: 8px 12px; font-weight: 700; cursor: pointer;
+    }
+    @media (max-width: 540px) {
+      body { overflow: hidden; }
+      header { padding: 8px 12px; height: auto; }
+      header .btn { padding: 8px 10px; }
+      main { flex-direction: column; }
+      #left-panel { padding: 12px; }
+      #resizer { display: none !important; }
+      #right-panel {
+        position: fixed; inset: 0; width: 100% !important; height: 100%;
+        background: #fff; border: none; padding: 16px 14px 24px 14px;
+        transform: translateY(100%); transition: transform .25s ease-out; z-index: 9998;
+        overflow-y: auto;
+      }
+      #right-panel.sp-open { transform: translateY(0%); }
+      #sp_fab { display: inline-flex; }
+      #sp_closePanel { display: inline-block; }
+      table { font-size: 14px; }
+      th { font-size: 12px; }
+      td { font-size: 13px; }
+      .legend-item { font-size: 13px; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div style="font-weight: bold;">SERVICE PRO v59.5</div>
+  <div style="font-weight: 700;">SERVICE PRO v59.5</div>
   <div style="display: flex; gap: 8px; flex-wrap:wrap;">
     <button class="btn" style="background:#546e7a;" onclick="exportJSON()">📤 Бэкап</button>
     <button class="btn" style="background:#78909c;" onclick="importJSON()">📥 Восстановить</button>
-
     <button class="btn" style="background:#00695c;" onclick="exportICS()">📅 Экспорт ICS</button>
     <label class="btn" style="background:#00796b; display:flex; align-items:center; gap:6px;">
       <input id="icsFile" type="file" accept=".ics,text/calendar" style="display:none" onchange="importICSFile(this)">
       <span onclick="document.getElementById('icsFile').click()">📥 Импорт ICS</span>
     </label>
-
     <button class="btn" style="background:#8e24aa;" onclick="printCalendar()">🖨 Печать PDF</button>
     <button class="btn" style="background:#b71c1c;" onclick="resetPWA()">🧹 Очистить кэш</button>
-
-    <select id="yearSelect" onchange="renderAll()" style="width: 80px; font-weight:bold; border-radius: 4px;">
+    <select id="yearSelect" onchange="renderAll()" style="width: 80px; font-weight:700; border-radius: 4px;">
       <option value="2025">2025</option>
       <option value="2026" selected>2026</option>
       <option value="2027">2027</option>
@@ -145,6 +168,8 @@
   <div id="resizer"></div>
 
   <div id="right-panel">
+    <button id="sp_closePanel" type="button" onclick="sp_closePanel()">Закрыть</button>
+
     <div class="card">
       <h4 id="tplTitle" style="margin:0 0 10px 0;">Настройка Собрания</h4>
       <input id="mName" placeholder="Название Собрания/События">
@@ -195,7 +220,6 @@
   </div>
 </main>
 
-<!-- PWA Update Banner -->
 <div id="pwa-update-banner" role="status" aria-live="polite" hidden>
   <div class="pwa-upd-icon" aria-hidden="true">🔄</div>
   <div class="pwa-upd-text">Доступно обновление приложения. Обновить сейчас?</div>
@@ -207,236 +231,587 @@
 </div>
 
 <script>
-let meetings = JSON.parse(localStorage.getItem('svc_m')) || [];
-const CLRS = ['#2e7d32','#d32f2f','#1976d2','#ef6c00','#7b1fa2','#0097a7','#5d4037','#455a64'];
+  let meetings = JSON.parse(localStorage.getItem('svc_m')) || [];
+  const CLRS = ['#2e7d32','#d32f2f','#1976d2','#ef6c00','#7b1fa2','#0097a7','#5d4037','#455a64'];
 
-const resizer = document.getElementById('resizer');
-const rightPanel = document.getElementById('right-panel');
-let isResizing = false;
-let currentFocusWeek = 1;
+  const resizer = document.getElementById('resizer');
+  const rightPanel = document.getElementById('right-panel');
+  let isResizing = false;
+  let currentFocusWeek = 1;
 
-resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.userSelect = 'none'; });
-document.addEventListener('mousemove', (e) => { if (!isResizing) return; let w = window.innerWidth - e.clientX; if (w > 300 && w < 950) rightPanel.style.width = w + 'px'; });
-document.addEventListener('mouseup', () => { isResizing = false; document.body.style.userSelect = 'auto'; });
+  resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.userSelect = 'none'; });
+  document.addEventListener('mousemove', (e) => { if (!isResizing) return; let w = window.innerWidth - e.clientX; if (w > 300 && w < 950) rightPanel.style.width = w + 'px'; });
+  document.addEventListener('mouseup', () => { isResizing = false; document.body.style.userSelect = 'auto'; });
 
-window.onload = () => {
-  // Палитра
-  const pnl = document.getElementById('pnlColors');
-  CLRS.forEach((c, idx) => {
-    const dot = document.createElement('div');
-    dot.className = 'color-dot' + (idx===0?' active':'');
-    dot.style.background = c;
-    dot.setAttribute('data-color', c);
-    dot.onclick = () => {
-      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-      dot.classList.add('active');
-      document.getElementById('selectedColor').value = c;
-    };
-    pnl.appendChild(dot);
-  });
+  window.onload = () => {
+    const pnl = document.getElementById('pnlColors');
+    CLRS.forEach((c, idx) => {
+      const dot = document.createElement('div');
+      dot.className = 'color-dot' + (idx===0?' active':'');
+      dot.style.background = c;
+      dot.setAttribute('data-color', c);
+      dot.onclick = () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        document.getElementById('selectedColor').value = c;
+      };
+      pnl.appendChild(dot);
+    });
 
-  // Авто-переход к текущей неделе
-  document.getElementById('autoToday').checked = localStorage.getItem('svc_auto_today') !== '0';
+    document.getElementById('autoToday').checked = localStorage.getItem('svc_auto_today') !== '0';
 
-  generateYearOptions();
-  renderAll();
+    renderAll();
 
-  if (localStorage.getItem('svc_auto_today') !== '0') {
-    setTimeout(()=>{ goToToday(); }, 300);
-  }
+    if (localStorage.getItem('svc_auto_today') !== '0') {
+      setTimeout(()=>{ goToToday(); }, 300);
+    }
 
-  handleHashAction();
-  window.addEventListener('hashchange', handleHashAction);
-};
-
-function toggleAutoToday(v){ localStorage.setItem('svc_auto_today', v ? '1':'0'); }
-
-// ===== Авто-годы =====
-function generateYearOptions() {
-  const yearSelect = document.getElementById('yearSelect');
-  if(!yearSelect) return;
-
-  yearSelect.innerHTML = '';
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear - 2; y <= currentYear + 5; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y;
-    yearSelect.appendChild(opt);
-  }
-  yearSelect.value = currentYear;
-}
-
-function handleHashAction() {
-  const h = location.hash.replace('#', '').toLowerCase();
-  if (h === 'today') goToToday();
-  else if (h === 'next') gotoNextMarked();
-  else if (h === 'prev') gotoPrevMarked();
-  else if (h === 'add') {
-    const inp = document.getElementById('mName');
-    if (inp) { inp.focus(); inp.scrollIntoView({behavior:'smooth', block:'center'}); }
-  }
-}
-
-// ===== Render =====
-function renderAll() {
-  const year = document.getElementById('yearSelect').value;
-  const tbody = document.getElementById('tableBody');
-  const data = JSON.parse(localStorage.getItem('svc_d_' + year)) || [];
-  tbody.innerHTML = '';
-
-  const fragment = document.createDocumentFragment();
-
-  for (let i = 1; i <= 52; i++) {
-    const row = data.find(r => r.id == i) || {};
-    const m = meetings.find(x => x.name === row.m) || {};
-    const wdStr = (m.wd || m.tWD) ? `${m.wd || ''} ${m.tWD || ''}`.trim() : '';
-    const weStr = (m.we || m.tWE) ? `${m.we || ''} ${m.tWE || ''}`.trim() : '';
-
-    const tr = document.createElement('tr');
-    tr.id = `row-wk-${i}`;
-    tr.innerHTML = `
-      <td style="text-align:center; color:#4caf50;">
-        <button class="linklike" title="Перейти к неделе в календаре" onclick="goToWeek(${i})">${i}</button>
-      </td>
-      <td><input type="date" value="${row.s || ''}" onchange="autoEnd(this)"></td>
-      <td><input type="date" class="d-e" value="${row.e || ''}" onchange="saveData()"></td>
-      <td>
-        <select onchange="saveData()" class="m-select">
-          <option value="">- нет события -</option>
-          ${meetings.map(x => `<option value="${x.name}" ${x.name === row.m ? 'selected' : ''}>${x.name}</option>`).join('')}
-        </select>
-      </td>
-      <td class="sched-text">${wdStr}</td>
-      <td class="sched-text">${weStr}</td>
-      <td><textarea oninput="saveData()">${row.nt || ''}</textarea></td>
-    `;
-    fragment.appendChild(tr);
-  }
-  tbody.appendChild(fragment);
-  updateMList();
-  buildCal();
-}
-
-function autoEnd(el) {
-  let s = new Date(el.value);
-  if(!isNaN(s.getTime())) {
-    let e = new Date(s);
-    const day = s.getDay();
-    // если вторник, до воскресенья
-    if(day === 2) e.setDate(s.getDate() + 5);
-    else e.setDate(s.getDate() + 6);
-    el.closest('tr').querySelector('.d-e').value = e.toISOString().split('T')[0];
-  }
-  saveData();
-}
-
-// ===== Добавление/редактирование встреч =====
-function addMeeting() {
-  const name = document.getElementById('mName').value;
-  const editIdx = parseInt(document.getElementById('editIdx').value);
-  if (!name) return;
-  const obj = {
-    name,
-    color: document.getElementById('selectedColor').value,
-    wd: document.getElementById('mDefWD').value,
-    we: document.getElementById('mDefWE').value,
-    tWD: document.getElementById('mTimeWD').value,
-    tWE: document.getElementById('mTimeWE').value
+    handleHashAction();
+    window.addEventListener('hashchange', handleHashAction);
   };
-  if (editIdx > -1) { meetings[editIdx] = obj; } else { meetings.push(obj); }
-  localStorage.setItem('svc_m', JSON.stringify(meetings));
-  cancelEdit();
-  renderAll();
-}
 
-function editM(i) {
-  const m = meetings[i];
-  document.getElementById('mName').value = m.name;
-  document.getElementById('mDefWD').value = m.wd || "";
-  document.getElementById('mDefWE').value = m.we || "";
-  document.getElementById('mTimeWD').value = m.tWD || "";
-  document.getElementById('mTimeWE').value = m.tWE || "";
-  document.getElementById('selectedColor').value = m.color;
+  function toggleAutoToday(v){ localStorage.setItem('svc_auto_today', v ? '1':'0'); }
 
-  document.querySelectorAll('.color-dot').forEach(d => {
-    d.classList.toggle('active', d.getAttribute('data-color') === m.color);
-  });
+  function handleHashAction() {
+    const h = location.hash.replace('#', '').toLowerCase();
+    if (h === 'today') goToToday();
+    else if (h === 'next') gotoNextMarked();
+    else if (h === 'prev') gotoPrevMarked();
+    else if (h === 'add') {
+      const inp = document.getElementById('mName');
+      if (inp) { inp.focus(); inp.scrollIntoView({behavior:'smooth', block:'center'}); }
+    }
+  }
 
-  document.getElementById('editIdx').value = i;
-  document.getElementById('btnSave').innerText = "Обновить";
-  document.getElementById('btnCancel').style.display = "inline-block";
-}
+  function renderAll() {
+    const year = document.getElementById('yearSelect').value;
+    const tbody = document.getElementById('tableBody');
+    const data = JSON.parse(localStorage.getItem('svc_d_' + year)) || [];
+    tbody.innerHTML = '';
 
-function cancelEdit() {
-  document.getElementById('mName').value = '';
-  document.getElementById('mTimeWD').value = ''; document.getElementById('mTimeWE').value = '';
-  document.getElementById('mDefWD').value = ''; document.getElementById('mDefWE').value = '';
-  document.getElementById('editIdx').value = "-1";
-  document.getElementById('btnSave').innerText = "Сохранить";
-  document.getElementById('btnCancel').style.display = "none";
-}
+    for (let i = 1; i <= 52; i++) {
+      const row = data.find(r => r.id == i) || {};
+      const m = meetings.find(x => x.name === row.m) || {};
+      const wdStr = (m.wd || m.tWD) ? `${m.wd || ''} ${m.tWD || ''}`.trim() : '';
+      const weStr = (m.we || m.tWE) ? `${m.we || ''} ${m.tWE || ''}`.trim() : '';
 
-function updateMList() {
-  const l = document.getElementById('meetingsList');
-  l.innerHTML = meetings.map((m, i) => `
-    <div class="m-item" style="border-left-color:${m.color}">
-      <span><b>${m.name}</b></span>
-      <div class="actions">
-        <span onclick="editM(${i})">✎</span>
-        <span onclick="delM(${i})" style="color:red;">✕</span>
+      const tr = document.createElement('tr');
+      tr.id = `row-wk-${i}`;
+      tr.innerHTML = `
+        <td style="text-align:center; color:#4caf50;">
+          <button class="linklike" title="Перейти к неделе в календаре" onclick="goToWeek(${i})">${i}</button>
+        </td>
+        <td><input type="date" value="${row.s || ''}" onchange="autoEnd(this)"></td>
+        <td><input type="date" class="d-e" value="${row.e || ''}" onchange="saveData()"></td>
+        <td>
+          <select onchange="saveData()" class="m-select">
+            <option value="">- нет события -</option>
+            ${meetings.map(x => `<option value="${x.name}" ${x.name === row.m ? 'selected' : ''}>${x.name}</option>`).join('')}
+          </select>
+        </td>
+        <td class="sched-text">${wdStr}</td>
+        <td class="sched-text">${weStr}</td>
+        <td><textarea oninput="saveData()">${row.nt || ''}</textarea></td>
+      `;
+      tbody.appendChild(tr);
+    }
+    updateMList();
+    buildCal();
+  }
+
+  function autoEnd(el) {
+    let s = new Date(el.value);
+    if(!isNaN(s.getTime())) {
+      let e = new Date(s);
+      e.setDate(s.getDate() + 6);
+      el.closest('tr').querySelector('.d-e').value = e.toISOString().split('T')[0];
+    }
+    saveData();
+  }
+
+  function addMeeting() {
+    const name = document.getElementById('mName').value;
+    const editIdx = parseInt(document.getElementById('editIdx').value);
+    if (!name) return;
+    const obj = { name, color: document.getElementById('selectedColor').value, wd: document.getElementById('mDefWD').value, we: document.getElementById('mDefWE').value, tWD: document.getElementById('mTimeWD').value, tWE: document.getElementById('mTimeWE').value };
+    if (editIdx > -1) { meetings[editIdx] = obj; } else { meetings.push(obj); }
+    localStorage.setItem('svc_m', JSON.stringify(meetings));
+    cancelEdit();
+    renderAll();
+  }
+
+  function editM(i) {
+    const m = meetings[i];
+    document.getElementById('mName').value = m.name;
+    document.getElementById('mDefWD').value = m.wd || "";
+    document.getElementById('mDefWE').value = m.we || "";
+    document.getElementById('mTimeWD').value = m.tWD || "";
+    document.getElementById('mTimeWE').value = m.tWE || "";
+    document.getElementById('selectedColor').value = m.color;
+    document.querySelectorAll('.color-dot').forEach(d => { d.classList.toggle('active', d.getAttribute('data-color') === m.color); });
+    document.getElementById('editIdx').value = i;
+    document.getElementById('btnSave').innerText = "Обновить";
+    document.getElementById('btnCancel').style.display = "inline-block";
+  }
+
+  function cancelEdit() {
+    document.getElementById('mName').value = '';
+    document.getElementById('mTimeWD').value = ''; document.getElementById('mTimeWE').value = '';
+    document.getElementById('mDefWD').value = ''; document.getElementById('mDefWE').value = '';
+    document.getElementById('editIdx').value = "-1";
+    document.getElementById('btnSave').innerText = "Сохранить";
+    document.getElementById('btnCancel').style.display = "none";
+  }
+
+  function updateMList() {
+    const l = document.getElementById('meetingsList');
+    l.innerHTML = meetings.map((m, i) => `
+      <div class="m-item" style="border-left-color:${m.color}">
+        <span><b>${m.name}</b></span>
+        <div class="actions">
+          <span onclick="editM(${i})">✎</span>
+          <span onclick="delM(${i})" style="color:red;">✕</span>
+        </div>
       </div>
-    </div>
-  `).join('');
-}
+    `).join('');
+  }
 
-function delM(i) { if(confirm('Удалить?')) { meetings.splice(i,1); localStorage.setItem('svc_m', JSON.stringify(meetings)); renderAll(); } }
+  function delM(i) { if(confirm('Удалить?')) { meetings.splice(i,1); localStorage.setItem('svc_m', JSON.stringify(meetings)); renderAll(); } }
 
-function saveData() {
-  const y = document.getElementById('yearSelect').value;
-  const rows = Array.from(document.querySelectorAll('#tableBody tr')).map((tr, i) => ({
-    id: i + 1,
-    s: tr.querySelectorAll('input[type="date"]')[0].value,
-    e: tr.querySelectorAll('input[type="date"]')[1].value,
-    m: tr.querySelector('.m-select').value,
-    nt: tr.querySelector('textarea').value
-  }));
-  localStorage.setItem('svc_d_' + y, JSON.stringify(rows));
-  buildCal();
-}
+  function saveData() {
+    const y = document.getElementById('yearSelect').value;
+    const rows = Array.from(document.querySelectorAll('#tableBody tr')).map((tr, i) => ({
+      id: i + 1,
+      s: tr.querySelectorAll('input[type="date"]')[0].value,
+      e: tr.querySelectorAll('input[type="date"]')[1].value,
+      m: tr.querySelector('.m-select').value,
+      nt: tr.querySelector('textarea').value
+    }));
+    localStorage.setItem('svc_d_' + y, JSON.stringify(rows));
+    buildCal();
+  }
 
-// ===== ICS =====
-function exportICS(){
-  const year = document.getElementById('yearSelect').value;
-  const rows = JSON.parse(localStorage.getItem('svc_d_'+year)||'[]');
-  let ics = ['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//ServicePro//Calendar//RU'];
+  function getStartMondayForYear(year) {
+    const sep1 = new Date(year, 8, 1);
+    const sep1Dow = sep1.getDay() === 0 ? 7 : sep1.getDay();
+    const deltaToPrevMon = -(sep1Dow - 1);
+    const startMonday = new Date(sep1);
+    startMonday.setDate(sep1.getDate() + deltaToPrevMon);
+    startMonday.setHours(0,0,0,0);
+    return startMonday;
+  }
 
-  rows.forEach(r=>{
-    if(!r || !r.s || !r.m) return;
+  function getServiceWeekNoByDate(dt, academicYear) {
+    const startMonday = getStartMondayForYear(academicYear);
+    const t = new Date(dt); t.setHours(0,0,0,0);
+    const diffWeeks = Math.floor((t.getTime() - startMonday.getTime()) / (7*24*3600*1000));
+    return diffWeeks + 1;
+  }
 
-    const uid = Date.now() + '-' + Math.random().toString(36).slice(2);
-    const now = new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
-    ics.push('BEGIN:VEVENT');
-    ics.push('UID:' + uid);
-    ics.push('DTSTAMP:' + now);
+  function getAcademicYearForDate(dt) {
+    const y = dt.getFullYear();
+    const sep1Y = new Date(y, 8, 1);
+    return dt < sep1Y ? (y - 1) : y;
+  }
 
-    const dtStart = r.s.replace(/-/g,'');
-    const endDate = new Date(r.e || r.s);
-    endDate.setDate(endDate.getDate() + 1); // ICS exclusive
-    const dtEnd = endDate.toISOString().slice(0,10).replace(/-/g,'');
+  function clearFilter() {
+    const el = document.getElementById('filterMeeting');
+    const chk = document.getElementById('filterStrict');
+    if (el) el.value = '';
+    if (chk) chk.checked = false;
+    buildCal();
+  }
 
-    ics.push('DTSTART;VALUE=DATE:' + dtStart);
-    ics.push('DTEND;VALUE=DATE:' + dtEnd);
+  function buildCal() {
+    const area = document.getElementById('calendarArea');
+    const year = parseInt(document.getElementById('yearSelect').value);
+    const data = JSON.parse(localStorage.getItem('svc_d_' + year)) || [];
+    area.innerHTML = '';
+    const months = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7];
+    const names = ["Сентябрь", "Октябрь", "Ноябрь", "Декабрь", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август"];
+    const startMonday = getStartMondayForYear(year);
 
-    ics.push('SUMMARY:' + (r.m || 'Service'));
-    if(r.nt) ics.push('DESCRIPTION:' + r.nt.replace(/\n/g,'\\n'));
-    ics.push('END:VEVENT');
-  });
-  ics.push('END:VCALENDAR');
+    const filterEl = document.getElementById('filterMeeting');
+    if (filterEl) {
+      const cur = filterEl.value || '';
+      filterEl.innerHTML = `<option value="">— показать все события —</option>` + meetings.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+      if (cur && meetings.some(m => m.name === cur)) filterEl.value = cur;
+    }
+    const filterSelected = filterEl ? filterEl.value : '';
+    const filterStrict = !!document.getElementById('filterStrict')?.checked;
 
-  const blob = new Blob([ics.join('\n')], {type:'text/calendar'});
-  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='servicepro-'+year+'.ics'; a.click();
-}
+    months.forEach((mIdx, i) => {
+      const cY = mIdx >= 8 ? year : year + 1;
+      const fD = new Date(cY, mIdx, 1).getDay();
+      const dInM = new Date(cY, mIdx + 1, 0).getDate();
+      const off = fD === 0 ? 6 : fD - 1;
+
+      let h = `<div style="margin-bottom:12px;"><div style="font-weight:bold; color:var(--primary); font-size:12px;">${names[i]} ${cY}</div><div class="mini-grid">`;
+      h += `<div style="color:#999">№</div><div>П</div><div>В</div><div>С</div><div>Ч</div><div>П</div><div>С</div><div>В</div>`;
+
+      let d = 1;
+      for (let r = 0; r < 6; r++) {
+        if (d > dInM) break;
+
+        const monDate = new Date(cY, mIdx, 1 - off + r*7);
+        monDate.setHours(0,0,0,0);
+        const diffWeeks = Math.floor((monDate.getTime() - startMonday.getTime()) / (7*24*3600*1000));
+        const serviceWeekNo = diffWeeks + 1;
+        const weekLabel = (serviceWeekNo >= 1 && serviceWeekNo <= 52) ? serviceWeekNo : '';
+
+        const sunDate = new Date(monDate);
+        sunDate.setDate(monDate.getDate() + 6);
+        const fmt = (dt) => dt.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'});
+        const wTitle = weekLabel ? `Неделя №${weekLabel} (${fmt(monDate)} — ${fmt(sunDate)})` : '';
+
+        const rowIdAttr = weekLabel ? ` id="wk-${weekLabel}"` : '';
+        h += `<div class="week-row"${rowIdAttr} data-week="${weekLabel}">`;
+
+        h += `<div class="week-cell" title="${wTitle}" data-week-click="${weekLabel}">${weekLabel}</div>`;
+
+        const rowData = (serviceWeekNo >= 1 && serviceWeekNo <= 52) ? data.find(x => x.id == serviceWeekNo) : null;
+        const mInfo = rowData ? meetings.find(m => m.name === rowData.m) : null;
+
+        const startT = rowData && rowData.s ? new Date(rowData.s).setHours(0,0,0,0) : null;
+        const endT   = rowData && rowData.e ? new Date(rowData.e).setHours(0,0,0,0) : null;
+
+        for (let c = 0; c < 7; c++) {
+          if ((r === 0 && c < off) || d > dInM) {
+            h += `<div></div>`;
+          } else {
+            let style = '';
+            let passFilter = !filterSelected || (rowData && rowData.m === filterSelected);
+
+            if (mInfo && startT) {
+              const curDate = new Date(cY, mIdx, d);
+              const curT = curDate.setHours(0,0,0,0);
+              const inRange = endT ? (curT >= startT && curT <= endT) : (curT === startT);
+
+              if (inRange && passFilter) {
+                style = `style="background:${mInfo.color}; color:#fff;"`;
+              } else if (filterSelected) {
+                style = filterStrict ? `style="visibility:hidden;"` : `style="opacity:0.35;"`;
+              }
+            } else if (filterSelected) {
+              style = filterStrict ? `style="visibility:hidden;"` : `style="opacity:0.35;"`;
+            }
+
+            h += `<div class="day-cell" ${style} title="${('0'+d).slice(-2)}.${('0'+(mIdx+1)).slice(-2)}.${cY}">${d++}</div>`;
+          }
+        }
+
+        h += `</div>`;
+      }
+      area.innerHTML += h + `</div></div>`;
+    });
+
+    area.onclick = (ev) => {
+      const wk = ev.target?.getAttribute?.('data-week-click');
+      if (wk) { focusLeftRow(parseInt(wk,10) || 0); }
+    };
+
+    renderLegend(filterSelected);
+  }
+
+  function renderLegend(activeName) {
+    const lg = document.getElementById('legendArea'); if (!lg) return; lg.innerHTML = '';
+    meetings.forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'legend-item' + (m.name === activeName ? ' active' : '');
+      item.title = `Фильтр: ${m.name}`;
+      item.innerHTML = `<span class="legend-swatch" style="background:${m.color}"></span><span>${m.name}</span>`;
+      item.onclick = () => {
+        const sel = document.getElementById('filterMeeting');
+        if (sel) sel.value = (sel.value === m.name ? '' : m.name);
+        buildCal();
+      };
+      lg.appendChild(item);
+    });
+  }
+
+  function goToWeek(weekNo) {
+    const el = document.getElementById('wk-' + weekNo);
+    currentFocusWeek = weekNo;
+    if (!el) {
+      buildCal();
+      const retry = document.getElementById('wk-' + weekNo);
+      if (!retry) return;
+      highlightWeek(retry);
+      retry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      focusLeftRow(weekNo);
+      return;
+    }
+    highlightWeek(el);
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    focusLeftRow(weekNo);
+  }
+
+  function highlightWeek(weekRowEl) { weekRowEl.classList.add('flash'); setTimeout(() => weekRowEl.classList.remove('flash'), 900); }
+
+  function focusLeftRow(weekNo) {
+    currentFocusWeek = weekNo;
+    const row = document.getElementById('row-wk-' + weekNo);
+    if (!row) return;
+    row.classList.add('row-flash');
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => row.classList.remove('row-flash'), 1000);
+  }
+
+  function goToToday() {
+    const now = new Date();
+    const targetAcadYear = getAcademicYearForDate(now);
+    const yearSelect = document.getElementById('yearSelect');
+    if (yearSelect && yearSelect.value != String(targetAcadYear)) {
+      yearSelect.value = String(targetAcadYear);
+      renderAll();
+    }
+    const wk = getServiceWeekNoByDate(now, targetAcadYear);
+    if (wk >= 1 && wk <= 52) {
+      goToWeek(wk);
+    } else {
+      alert('Сегодня вне диапазона 1–52 для выбранного учебного года.');
+    }
+  }
+
+  function collectMarkedWeeks() {
+    const year = parseInt(document.getElementById('yearSelect').value);
+    const data = JSON.parse(localStorage.getItem('svc_d_' + year)) || [];
+    const sel = document.getElementById('filterMeeting');
+    const filterSelected = sel ? sel.value : '';
+    const marked = [];
+    for (let i = 1; i <= 52; i++) {
+      const row = data.find(r => r.id == i);
+      if (!row) { marked[i] = false; continue; }
+      const has = row.m && row.m.trim().length > 0;
+      marked[i] = has && (!filterSelected || row.m === filterSelected);
+    }
+    return marked;
+  }
+
+  function gotoNextMarked() {
+    const marked = collectMarkedWeeks();
+    if (!marked.some(Boolean)) return;
+    let i = currentFocusWeek || 1;
+    for (let step = 1; step <= 52; step++) {
+      const idx = ((i - 1 + step) % 52) + 1;
+      if (marked[idx]) { goToWeek(idx); return; }
+    }
+  }
+
+  function gotoPrevMarked() {
+    const marked = collectMarkedWeeks();
+    if (!marked.some(Boolean)) return;
+    let i = currentFocusWeek || 1;
+    for (let step = 1; step <= 52; step++) {
+      const idx = ((i - 1 - step + 52*10) % 52) + 1;
+      if (marked[idx]) { goToWeek(idx); return; }
+    }
+  }
+
+  function printCalendar(){
+    document.body.classList.add('print-cal');
+    setTimeout(()=>{ window.print(); setTimeout(()=>document.body.classList.remove('print-cal'), 500); }, 50);
+  }
+
+  function exportICS(){
+    const year = document.getElementById('yearSelect').value;
+    const rows = JSON.parse(localStorage.getItem('svc_d_'+year)||'[]');
+    let ics = ['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//ServicePro//Calendar//RU'];
+    rows.forEach(r=>{
+      if(!r || !r.s || !r.m) return;
+      const dtStart = r.s.replace(/-/g,'');
+      const dtEnd = (r.e||r.s).replace(/-/g,'');
+      ics.push('BEGIN:VEVENT');
+      ics.push('SUMMARY:'+r.m);
+      ics.push('DTSTART;VALUE=DATE:'+dtStart);
+      ics.push('DTEND;VALUE=DATE:'+dtEnd);
+      if(r.nt) ics.push('DESCRIPTION:'+r.nt.replace(/\n/g,'\\n'));
+      ics.push('END:VEVENT');
+    });
+    ics.push('END:VCALENDAR');
+    const blob = new Blob([ics.join('\n')], {type:'text/calendar'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='servicepro-'+year+'.ics'; a.click();
+  }
+
+  function importICSFile(input){
+    const f = input.files && input.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{ importICSParse(ev.target.result); alert('Импорт завершён'); renderAll(); }
+      catch(e){ alert('Ошибка импорта: '+e); }
+      finally { input.value=''; }
+    };
+    reader.readAsText(f);
+  }
+
+  function importICSParse(text){
+    const lines = text.split(/\r?\n/); let cur=null; const events=[];
+    for(const raw of lines){
+      const line = raw.trim();
+      if(line==='BEGIN:VEVENT'){ cur={}; }
+      else if(line==='END:VEVENT'){ if(cur) events.push(cur); cur=null; }
+      else if(cur){
+        const idx = line.indexOf(':');
+        if (idx === -1) continue;
+        const k = line.slice(0, idx);
+        const v = line.slice(idx+1);
+        const key = k.split(';')[0];
+        if(key==='SUMMARY') cur.summary=v;
+        if(key==='DTSTART' || key==='DTSTART;VALUE=DATE') cur.dtstart=v;
+        if(key==='DTEND'   || key==='DTEND;VALUE=DATE')   cur.dtend=v;
+        if(key==='DESCRIPTION') cur.desc=v?.replace(/\\n/g,'\n');
+      }
+    }
+    const year = parseInt(document.getElementById('yearSelect').value);
+    const data = JSON.parse(localStorage.getItem('svc_d_'+year)||'[]');
+
+    function toDateYYYYMMDD(s){
+      if(!s) return null; const y=+s.slice(0,4), m=+s.slice(4,6)-1, d=+s.slice(6,8);
+      const dt=new Date(y,m,d); dt.setHours(0,0,0,0); return dt;
+    }
+
+    events.forEach(ev=>{
+      const sdt = toDateYYYYMMDD(ev.dtstart); const edt = toDateYYYYMMDD(ev.dtend)||sdt; if(!sdt) return;
+      const acadYear = getAcademicYearForDate(sdt);
+      if(acadYear!==year) return;
+      const wk = getServiceWeekNoByDate(sdt, acadYear);
+      if(wk<1 || wk>52) return;
+
+      const name = ev.summary||'Импортированное событие';
+      if(!meetings.some(m=>m.name===name)){
+        meetings.push({name, color: CLRS[meetings.length%CLRS.length], wd:'', we:'', tWD:'', tWE:''});
+      }
+      let row = data.find(r=>r.id==wk); if(!row){ row={id:wk}; data.push(row); }
+      const pad2=n=>n<10?'0'+n:''+n;
+      row.s = `${sdt.getFullYear()}-${pad2(sdt.getMonth()+1)}-${pad2(sdt.getDate())}`;
+      row.e = `${edt.getFullYear()}-${pad2(edt.getMonth()+1)}-${pad2(edt.getDate())}`;
+      row.m = name;
+      if(ev.desc) row.nt = (row.nt?row.nt+'\n':'')+ev.desc;
+    });
+
+    localStorage.setItem('svc_m', JSON.stringify(meetings));
+    localStorage.setItem('svc_d_'+year, JSON.stringify(data));
+  }
+
+  function exportJSON() {
+    const ui = {
+      year: document.getElementById('yearSelect')?.value || '',
+      filter: document.getElementById('filterMeeting')?.value || '',
+      strict: !!document.getElementById('filterStrict')?.checked,
+      autoToday: document.getElementById('autoToday')?.checked
+    };
+    const backup = {
+      m: meetings,
+      d25: localStorage.getItem('svc_d_2025'),
+      d26: localStorage.getItem('svc_d_2026'),
+      d27: localStorage.getItem('svc_d_2027'),
+      ui
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_v59.5.json`; a.click();
+  }
+
+  function importJSON() {
+    const input = document.createElement('input'); input.type = 'file';
+    input.onchange = e => {
+      const reader = new FileReader(); reader.readAsText(e.target.files[0]);
+      reader.onload = ev => {
+        const c = JSON.parse(ev.target.result);
+        if (c.m) localStorage.setItem('svc_m', JSON.stringify(c.m));
+        if (c.d25) localStorage.setItem('svc_d_2025', c.d25);
+        if (c.d26) localStorage.setItem('svc_d_2026', c.d26);
+        if (c.d27) localStorage.setItem('svc_d_2027', c.d27);
+        if (c.ui) {
+          const yEl = document.getElementById('yearSelect');
+          if (yEl && c.ui.year) yEl.value = c.ui.year;
+          setTimeout(() => {
+            const fEl = document.getElementById('filterMeeting');
+            const sEl = document.getElementById('filterStrict');
+            const aEl = document.getElementById('autoToday');
+            if (fEl && typeof c.ui.filter === 'string') fEl.value = c.ui.filter;
+            if (sEl && typeof c.ui.strict === 'boolean') sEl.checked = !!c.ui.strict;
+            if (aEl && typeof c.ui.autoToday !== 'undefined') aEl.checked = !!c.ui.autoToday;
+            renderAll();
+          }, 0);
+        } else {
+          location.reload();
+        }
+      };
+    };
+    input.click();
+  }
+
+  async function resetPWA(){
+    const ok = confirm('Очистить кэш (Service Worker) и локальные данные (localStorage), затем перезапустить?');
+    if(!ok) return;
+    try{
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for(const reg of regs) await reg.unregister();
+      }
+      const keys = await caches.keys();
+      for(const k of keys) await caches.delete(k);
+      localStorage.clear();
+      location.reload();
+    }catch(e){ alert('Ошибка очистки: '+e); }
+  }
+
+  (function initPwaUpdater(){
+    if (!('serviceWorker' in navigator)) return;
+    const BANNER_ID = 'pwa-update-banner';
+    const $banner = document.getElementById(BANNER_ID);
+    const $apply  = document.getElementById('pwaApplyBtn');
+    const $later  = document.getElementById('pwaLaterBtn');
+    const $close  = document.getElementById('pwaCloseBtn');
+
+    let newWorkerRef = null;
+    function showBanner(){ if ($banner) $banner.hidden = false; }
+    function hideBanner(){ if ($banner) $banner.hidden = true; }
+    function applyUpdate(){ if (!newWorkerRef) return; try { newWorkerRef.postMessage({ type: 'SKIP_WAITING' }); } catch(e){} }
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => { setTimeout(() => location.reload(), 100); });
+
+    $apply?.addEventListener('click', applyUpdate);
+    $later?.addEventListener('click', hideBanner);
+    $close?.addEventListener('click', hideBanner);
+
+    function trackInstalling(worker){
+      if(!worker) return;
+      newWorkerRef = worker;
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+          showBanner();
+        }
+      });
+    }
+
+    function checkForUpdate(reg){
+      if (reg.waiting) { newWorkerRef = reg.waiting; showBanner(); return; }
+      if (reg.installing) { trackInstalling(reg.installing); return; }
+      reg.addEventListener('updatefound', () => trackInstalling(reg.installing));
+      setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
+    }
+
+    navigator.serviceWorker.register('/Calender-NEW/sw.js', { scope: '/Calender-NEW/' }).then(async (reg) => {
+      try { await reg.navigationPreload?.enable?.(); } catch {}
+      checkForUpdate(reg);
+    }).catch(err => console.error('[PWA] SW registration failed', err));
+  })();
+</script>
+
+<button id="sp_fab" type="button" aria-label="Открыть настройки" onclick="sp_openPanel()">⚙️</button>
+
+<script>
+  function sp_openPanel(){ document.getElementById('right-panel')?.classList.add('sp-open'); }
+  function sp_closePanel(){ document.getElementById('right-panel')?.classList.remove('sp-open'); }
+  (function(){
+    const mq = window.matchMedia('(max-width: 540px)');
+    function apply(){ if (!mq.matches) sp_closePanel(); }
+    mq.addEventListener ? mq.addEventListener('change', apply) : mq.addListener(apply);
+    window.addEventListener('resize', apply);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) sp_closePanel(); });
+    apply();
+  })();
 </script>
 
 </body>
