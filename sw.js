@@ -1,6 +1,6 @@
 
 // === Версия кэша (обновляйте при каждом релизе) ===
-const CACHE_NAME = 'service-pro-v59.4';
+const CACHE_NAME = 'service-pro-v59.5';
 
 // === Предкэшируемые ресурсы ===
 const URLS_TO_CACHE = [
